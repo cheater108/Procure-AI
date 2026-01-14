@@ -1,13 +1,14 @@
-
+import { Routes, Route } from 'react-router';
+import Home from '@/pages/Home';
+import { AppLayout } from '@/components/AppLayout';
 
 function App() {
-
   return (
-    <>
-      <div>
-        Home
-      </div>
-    </>
+    <Routes>
+      <Route path="/" element={<AppLayout />}>
+        <Route index element={<Home />} />
+      </Route>
+    </Routes>
   )
 }
 
