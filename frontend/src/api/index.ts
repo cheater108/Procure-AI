@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api', // Works because of your Vite proxy
+  baseURL: 'http://localhost:3000/api',
 });
 
 // Request Interceptor: Attach Session ID to every request

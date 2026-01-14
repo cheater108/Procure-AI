@@ -2,13 +2,14 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { sessionMiddleware } from "./middlewares.js";
-
+import connectDB from "./db/db.js";
+import sessionRouter from "./routes/session.js";
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({}));
 app.use(express.json());
 app.use(sessionMiddleware);
 
@@ -19,6 +20,8 @@ const getSessionRfps = (req: any) => {
     }
     return req.session.rfps;
 };
+
+app.use("/api/session", sessionRouter);
 
 app.get("/health", (req, res) => {
     res.json({ message: "ok" });
@@ -46,6 +49,7 @@ app.get("/api/rfps", (req, res) => {
     res.json({rfps: []});
 });
 
-app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
+app.listen(PORT, async () => {
+    await connectDB();
+    console.log(`[Server] - Server started on port ${PORT}`);
 });
