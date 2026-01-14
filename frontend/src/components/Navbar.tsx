@@ -20,10 +20,10 @@ export function Navbar() {
               Home
             </Link>
             <Link
-              to="/demo"
+              to="/chat"
               className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Demo
+              Chat
             </Link>
           </nav>
         </div>
@@ -31,9 +31,11 @@ export function Navbar() {
           <Button variant="ghost" size="sm" className="hidden md:inline-flex">
             Log in
           </Button>
-          <Button size="sm" className="hidden md:inline-flex">
-            Get Started
-          </Button>
+          <Link to="/chat">
+            <Button size="sm" className="hidden md:inline-flex">
+              Get Started
+            </Button>
+          </Link>
           <Button variant="ghost" size="icon" className="md:hidden">
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle menu</span>
