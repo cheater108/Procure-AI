@@ -7,7 +7,8 @@ const sessionSchema = new mongoose.Schema({
       index: true,
     },
     rfps: {
-      type: Array,
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "RFP",
       default: []
     }
 })
