@@ -25,6 +25,12 @@ export function Navbar() {
             >
               Chat
             </Link>
+            <Link
+              to="/rfps"
+              className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              My RFPs
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">

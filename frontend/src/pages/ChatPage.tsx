@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Send, Bot, User } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ProcurementStepper } from "@/components/ProcurementStepper";
+import api from "@/api";
+import { useNavigate } from "react-router";
 
 type Message = {
   id: string;
@@ -14,7 +16,8 @@ type Message = {
 export default function Demo() {
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1); // Demo state: Step 3
+  const [currentStep, setCurrentStep] = useState(1);
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -29,28 +32,34 @@ export default function Demo() {
     e.preventDefault();
     if (!query.trim()) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: query,
-      isUser: true,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setQuery("");
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      const botResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        content: `I've received your query about "${query}". This is a demo response. In a real implementation, I would analyze your procurement needs and provide specific recommendations.`,
-        isUser: false,
+    try {
+      // For demo purposes, we treat the first submission as "Creating an RFP"
+      await api.post("/api/rfps", {
+        title: query.slice(0, 50) + (query.length > 50 ? "..." : ""),
+        description: query,
+      });
+
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        content: query,
+        isUser: true,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, botResponse]);
+
+      setMessages((prev) => [...prev, userMessage]);
+      setQuery("");
+      setCurrentStep(2); // Move to "Searching for vendors"
+
+      // Simulate bot processing then redirect
+      setTimeout(() => {
+        navigate("/rfps");
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to create RFP:", error);
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -117,10 +126,10 @@ export default function Demo() {
           disabled={isLoading}
           rows={5}
         />
-        <Button type="submit" size="icon" className="w-24" disabled={isLoading}>
+        <Button type="submit" size="icon" className="w-45" disabled={isLoading}>
           <div className="flex items-center gap-2">
             <Send className="h-5 w-5" />
-            <p>Send</p>
+            <p>Create Procurement</p>
             <span className="sr-only">Send</span>
           </div>
         </Button>
