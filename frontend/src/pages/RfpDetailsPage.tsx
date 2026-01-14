@@ -23,35 +23,16 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronLeft, Plus, Mail, Phone, User, ExternalLink, Loader2, Send } from "lucide-react";
+import { ChevronLeft, Plus, Mail, Phone, User, Loader2, Send } from "lucide-react";
 import { ProcurementStepper } from "@/components/ProcurementStepper";
+import type { RFP, Vendor} from "@/types/types";
 
-interface Vendor {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  status: "not_contacted" | "contacted" | "responded" | "rejected";
-}
 
-interface RFP {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  status: string;
-}
-
-const dummyVendors: Vendor[] = [
-  { id: "1", name: "Acme Corp", email: "contact@acme.com", phone: "+1 234 567 890", status: "not_contacted" },
-  { id: "2", name: "Global Logistics", email: "info@globallog.com", phone: "+1 987 654 321", status: "contacted" },
-  { id: "3", name: "TechSolutions Inc", email: "sales@techsol.com", phone: "+44 20 7946 0958", status: "responded" },
-];
 
 export default function RfpDetailsPage() {
   const { id } = useParams();
   const [rfp, setRfp] = useState<RFP | null>(null);
-  const [vendors, setVendors] = useState<Vendor[]>(dummyVendors);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddingVendor, setIsAddingVendor] = useState(false);
   const [newVendor, setNewVendor] = useState({ name: "", email: "", phone: "" });
@@ -60,27 +41,13 @@ export default function RfpDetailsPage() {
   useEffect(() => {
     const fetchRfp = async () => {
       try {
-        // In a real app, you'd fetch by ID. Here we find in the list or use dummy for demo.
         const response = await api.get("/rfps");
-        const found = response.data.find((item: RFP) => item.id === id);
+        console.log(response.data);
+        const found = response.data.rfps.find((item: RFP) => item._id === id);
         if (found) {
-          setRfp({
-            id: id || "demo",
-            title: "Demo Procurement Request",
-            description: "Detailed description of the demo RFP process.",
-            createdAt: new Date().toISOString(),
-            status: "active"
-          });
-        } else {
-          // Dummy RFP if not found for demo persistence
-          setRfp({
-            id: id || "demo",
-            title: "Demo Procurement Request",
-            description: "Detailed description of the demo RFP process.",
-            createdAt: new Date().toISOString(),
-            status: "active"
-          });
-        }
+          setRfp(found);
+          setVendors(found.vendors);
+        } 
       } catch (error) {
         console.error("Failed to fetch RFP details:", error);
       } finally {
@@ -88,39 +55,16 @@ export default function RfpDetailsPage() {
       }
     };
 
-    // fetchRfp();
-    setRfp({
-            id: id || "demo",
-            title: "Demo Procurement Request",
-            description: "Detailed description of the demo RFP process.",
-            createdAt: new Date().toISOString(),
-            status: "active"
-          });
+    fetchRfp();
     setIsLoading(false);
   }, [id]);
 
   const handleAddVendor = (e: React.FormEvent) => {
-    e.preventDefault();
-    const vendor: Vendor = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...newVendor,
-      status: "not_contacted",
-    };
-    setVendors([...vendors, vendor]);
-    setNewVendor({ name: "", email: "", phone: "" });
-    setIsAddingVendor(false);
+
   };
 
-  const handleSendEmail = (vendorId: string) => {
-    setSendingEmailId(vendorId);
-    // Simulate email flow
-    setTimeout(() => {
-      setVendors(vendors.map(v => 
-        v.id === vendorId ? { ...v, status: "contacted" as const } : v
-      ));
-      setSendingEmailId(null);
-      alert("Email sequence started for this vendor!");
-    }, 1500);
+  const handleSendEmail = (vendorEmail: string) => {
+    
   };
 
   if (isLoading) {
@@ -225,8 +169,8 @@ export default function RfpDetailsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {vendors.map((vendor) => (
-                <TableRow key={vendor.id}>
+              {vendors.length > 0 ? vendors.map((vendor) => (
+                <TableRow key={vendor.email}>
                   <TableCell className="font-medium align-middle">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
@@ -258,11 +202,11 @@ export default function RfpDetailsPage() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => handleSendEmail(vendor.id)}
-                      disabled={sendingEmailId === vendor.id}
+                      onClick={() => handleSendEmail(vendor.email)}
+                      disabled={sendingEmailId === vendor.email}
                       className="text-primary hover:text-primary hover:bg-primary/10"
                     >
-                      {sendingEmailId === vendor.id ? (
+                      {sendingEmailId === vendor.email ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <>
@@ -273,7 +217,13 @@ export default function RfpDetailsPage() {
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}
+              )) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    No vendors added yet
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>

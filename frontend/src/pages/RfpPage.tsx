@@ -5,14 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileText, Calendar, ArrowRight } from "lucide-react";
 import { Link } from "react-router";
+import type { RFP } from "@/types/types";
 
-interface RFP {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  status: string;
-}
 
 export default function RfpPage() {
   const [rfps, setRfps] = useState<RFP[]>([]);
@@ -22,7 +16,8 @@ export default function RfpPage() {
     const fetchRfps = async () => {
       try {
         const response = await api.get("/rfps");
-        setRfps(response.data);
+        console.log(response.data.rfps);
+        setRfps(response.data.rfps);
       } catch (error) {
         console.error("Failed to fetch RFPs:", error);
       } finally {
@@ -30,7 +25,7 @@ export default function RfpPage() {
       }
     };
 
-    // fetchRfps();
+    fetchRfps();
   }, []);
 
   return (
@@ -65,7 +60,7 @@ export default function RfpPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {rfps.map((rfp) => (
-            <Link key={rfp.id} to={`/rfps/${rfp.id}`}>
+            <Link key={rfp._id} to={`/rfps/${rfp._id}`}>
               <Card className="group hover:shadow-md transition-shadow cursor-pointer h-full">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start mb-2">

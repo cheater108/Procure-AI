@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { ChatOpenAI } from "@langchain/openai";
+import { z } from "zod";
 import { createAgent } from "langchain";
-import * as z from "zod";
 
 const model = new ChatOpenAI({
   model: "gpt-4o",
@@ -9,17 +9,26 @@ const model = new ChatOpenAI({
 });
 
 const responseSchema = z.object({
-  body: z.string(),
-  description: z.string(),
-})
+  title: z.string().describe("Short 3-5 word title for the RFP"),
+  subject: z.string().describe("Subject line for the email"),
+  body: z.string().describe("The full email body to be sent to vendors"),
+  description: z.string().describe("A technical summary of the requirements for internal tracking"),
+});
+
+const systemPrompt = `You are a ProcureAI agent. Your task is to generate an RFP based on the given requirements. 
+  The user will provide information about the product, quantity, and budget.
+  If they don't provide a budget, assume reasonable details. 
+  The final output must contain a professional email body for vendors, a title, subject line, and a technical description for internal evaluation used later to rate vendor quotes.`;
 
 const agent = createAgent({
   model,
-  systemPrompt: `You are an ProcureAI agent, your task is to generate a RFP based on the given requirements. 
-  User will give you information will you a prompt with information about the product to purchase, the quantity and budget they have.
-  If they don't have a budget, you should assume the details. The generated RFP will be mailed to product vendors so the final output should contain body of the email and description of the RFP.
-  The description should contain all the required details of RFP because it will be used to score and rate the responses of RFP and recommendation.`,
-  responseFormat: responseSchema,
-});
+  responseFormat:responseSchema,
+  systemPrompt,
+})
 
-export default agent;
+export const generateRfp = async (prompt: string) => {
+  const response = await agent.invoke({
+    messages: [{role: "user", content: prompt}]
+  });
+  return response.structuredResponse;
+};
