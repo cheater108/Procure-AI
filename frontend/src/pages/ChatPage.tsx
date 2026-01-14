@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Send, Bot, User } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { ProcurementStepper } from "@/components/ProcurementStepper";
 
 type Message = {
   id: string;
@@ -13,6 +14,7 @@ type Message = {
 export default function Demo() {
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1); // Demo state: Step 3
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -59,6 +61,8 @@ export default function Demo() {
           Ask me anything about procurement, RFPs, or vendor management
         </p>
       </div>
+
+      <ProcurementStepper currentStep={currentStep} />
 
       {/* <div className="bg-card rounded-lg border shadow-sm mb-6 h-[60vh] overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
