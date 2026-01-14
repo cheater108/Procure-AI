@@ -49,4 +49,23 @@ export const getRfps = async (req: any, res: any) => {
         console.error("[RFP Router] - Failed to fetch RFPs:", error);
         res.status(500).json({ error: "Failed to fetch RFPs" });
     }
-}
+};
+
+export const patchRfp = async (req: any, res: any) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+
+        const rfp = await RFP.findByIdAndUpdate(id, updates, { new: true });
+        
+        if (!rfp) {
+            return res.status(404).json({ error: "RFP not found" });
+        }
+
+        res.json(rfp);
+    } catch (error) {
+        console.error("[RFP Router] - Failed to update RFP:", error);
+        res.status(500).json({ error: "Failed to update RFP" });
+    }
+};
+

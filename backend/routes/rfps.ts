@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { postRfp, getRfps } from "../controllers/rfps.js";
+import { postRfp, getRfps, patchRfp } from "../controllers/rfps.js";
 
 const router = Router();
 
@@ -7,5 +7,7 @@ const router = Router();
 router.post("/", postRfp);
 // Get all RFPs for session
 router.get("/", getRfps);
+// Patch RFP
+router.patch("/:id", patchRfp);
 
 export default router;

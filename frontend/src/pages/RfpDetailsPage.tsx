@@ -59,12 +59,44 @@ export default function RfpDetailsPage() {
     setIsLoading(false);
   }, [id]);
 
-  const handleAddVendor = (e: React.FormEvent) => {
+  const handleAddVendor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rfp) return;
 
+    try {
+      const vendor: Vendor = {
+        name: newVendor.name,
+        email: newVendor.email,
+        phone: newVendor.phone,
+        status: "not_contacted",
+      };
+
+      const originalVendors = rfp.vendors || [];
+      const updatedVendors = [...originalVendors, vendor];
+
+      const response = await api.patch(`/rfps/${id}`, {
+        vendors: updatedVendors
+      });
+
+      if (response.data) {
+        setRfp(response.data);
+        setVendors(response.data.vendors);
+        setNewVendor({ name: "", email: "", phone: "" });
+        setIsAddingVendor(false);
+      }
+    } catch (error) {
+      console.error("Failed to add vendor:", error);
+      alert("Failed to add vendor. Please try again.");
+    }
   };
 
   const handleSendEmail = (vendorEmail: string) => {
-    
+    setSendingEmailId(vendorEmail);
+    // Simulate email flow
+    setTimeout(() => {
+      setSendingEmailId(null);
+      alert("Email sequence started for " + vendorEmail);
+    }, 1500);
   };
 
   if (isLoading) {
