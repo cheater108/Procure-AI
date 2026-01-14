@@ -1,0 +1,15 @@
+{
+  "name": "procure-ai",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Chetan Anand",
+  "license": "ISC",
+  "description": "Procure AI - AI-Powered Procurement and proposal requests."
+}
