@@ -6,6 +6,7 @@ export interface Vendor {
     status: "not_contacted" | "contacted" | "responded" | "rejected";
     response?: string;
     score?: number;
+    suggestion?: string;
 }
 
 export interface RFP {

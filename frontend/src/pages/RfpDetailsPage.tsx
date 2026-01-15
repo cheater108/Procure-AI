@@ -23,10 +23,17 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronLeft, Plus, Mail, Phone, User, Loader2, Send } from "lucide-react";
+import { ChevronLeft, Plus, Mail, Phone, User, Loader2, Send, Info } from "lucide-react";
 import { ProcurementStepper } from "@/components/ProcurementStepper";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import type { RFP, Vendor} from "@/types/types";
 
 
@@ -41,6 +48,14 @@ export default function RfpDetailsPage() {
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [emailBody, setEmailBody] = useState("");
   const [isSendingBulk, setIsSendingBulk] = useState(false);
+  const [selectedVendorForFeedback, setSelectedVendorForFeedback] = useState<Vendor | null>(null);
+
+  let procurementStep = 2;
+  vendors.forEach((vendor: Vendor) => {
+    if (vendor.status === 'contacted' && procurementStep < 3) procurementStep = 3;
+    if (vendor.status === 'responded' && procurementStep < 4) procurementStep = 4;
+  });
+
 
   useEffect(() => {
     const fetchRfp = async () => {
@@ -126,6 +141,13 @@ export default function RfpDetailsPage() {
     } else {
       setSelectedVendorIds(vendors.map(v => v._id));
     }
+  };
+
+  const getScoreVariant = (score?: number) => {
+    if (score === undefined) return "outline";
+    if (score >= 8) return "success";
+    if (score >= 5) return "warning";
+    return "destructive";
   };
 
   if (isLoading) {
@@ -250,7 +272,7 @@ export default function RfpDetailsPage() {
         </div>
       </div>
 
-      <ProcurementStepper currentStep={2} />
+      <ProcurementStepper currentStep={procurementStep} />
 
       <Card>
         <CardHeader>
@@ -314,9 +336,17 @@ export default function RfpDetailsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Badge>
-                      {vendor.status === 'responded' ? vendor.score : 'awaiting response'}
-                    </Badge>
+                    {vendor.status === 'responded' ? (
+                      <Badge 
+                        variant={getScoreVariant(vendor.score)} 
+                        className="cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => setSelectedVendorForFeedback(vendor)}
+                      >
+                        {vendor.score}/10
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline">awaiting response</Badge>
+                    )}
                   </TableCell>
                 </TableRow>
               )) : (
@@ -330,6 +360,61 @@ export default function RfpDetailsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <Sheet open={!!selectedVendorForFeedback} onOpenChange={(open) => !open && setSelectedVendorForFeedback(null)}>
+        <SheetContent className="sm:max-w-xl overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-2xl">Vendor Evaluation</SheetTitle>
+            <SheetDescription>
+              Detailed feedback and response for {selectedVendorForFeedback?.name}
+            </SheetDescription>
+          </SheetHeader>
+          
+          <div className="space-y-8 py-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Badge variant={getScoreVariant(selectedVendorForFeedback?.score)}>
+                    Score: {selectedVendorForFeedback?.score}/10
+                  </Badge>
+                </h3>
+              </div>
+              <div className="bg-primary/5 rounded-xl p-5 border border-primary/10">
+                <div className="flex items-center gap-2 font-bold mb-3 text-primary">
+                  <Info className="h-5 w-5" />
+                  AI Suggestion
+                </div>
+                <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+                  {selectedVendorForFeedback?.suggestion || "No AI feedback available."}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold border-b pb-2">Vendor Response</h3>
+              <div className="bg-muted/30 rounded-xl p-5 border min-h-[200px]">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap italic">
+                  "{selectedVendorForFeedback?.response || "Vendor has not provided a text response."}"
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold border-b pb-2">Contact Details</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 rounded-lg border bg-card">
+                  <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-bold">Email</p>
+                  <p className="text-sm break-all">{selectedVendorForFeedback?.email}</p>
+                </div>
+                <div className="p-3 rounded-lg border bg-card">
+                  <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-bold">Phone</p>
+                  <p className="text-sm">{selectedVendorForFeedback?.phone || "N/A"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
