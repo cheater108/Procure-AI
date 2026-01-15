@@ -283,7 +283,7 @@ export default function RfpDetailsPage() {
                     <Checkbox 
                       checked={selectedVendorIds.includes(vendor._id)}
                       onChange={() => toggleVendorSelection(vendor._id)}
-                      disabled={vendor.status === "contacted"}
+                      // disabled={vendor.status === "contacted"}
                     />
                   </TableCell>
                   <TableCell className="font-medium align-middle">

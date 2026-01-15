@@ -12,7 +12,7 @@ class EmailManager {
       sgMail.setApiKey(SENDGRID_API_KEY);
     }
 
-    async sendEmail(to: string, body: string, subject: string) {
+    async sendEmail(to: string, body: string, subject: string, vendorId: string) {
       if (!SENDGRID_FROM_EMAIL) {
         throw new Error("SENDGRID_FROM_EMAIL is not defined");
       }
@@ -22,6 +22,7 @@ class EmailManager {
         from: SENDGRID_FROM_EMAIL,
         subject,
         text: body,
+        replyTo: `procure-${vendorId}-${SENDGRID_FROM_EMAIL}`
       };
       await sgMail.send(msg);
     }
