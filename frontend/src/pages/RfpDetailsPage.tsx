@@ -61,7 +61,6 @@ export default function RfpDetailsPage() {
     const fetchRfp = async () => {
       try {
         const response = await api.get("/rfps");
-        console.log(response.data);
         const found = response.data.rfps.find((item: RFP) => item._id === id);
         if (found) {
           setRfp(found);

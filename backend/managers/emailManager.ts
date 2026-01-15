@@ -16,7 +16,6 @@ class EmailManager {
       if (!SENDGRID_FROM_EMAIL) {
         throw new Error("SENDGRID_FROM_EMAIL is not defined");
       }
-      console.log(SENDGRID_API_KEY, SENDGRID_FROM_EMAIL);
       const msg: MailDataRequired = {
         to,
         from: SENDGRID_FROM_EMAIL,

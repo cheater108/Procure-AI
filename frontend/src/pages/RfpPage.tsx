@@ -16,7 +16,6 @@ export default function RfpPage() {
     const fetchRfps = async () => {
       try {
         const response = await api.get("/rfps");
-        console.log(response.data.rfps);
         setRfps(response.data.rfps);
       } catch (error) {
         console.error("Failed to fetch RFPs:", error);
