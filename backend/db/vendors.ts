@@ -10,7 +10,8 @@ const vendorSchema = new mongoose.Schema({
     rfpId: {
       type: mongoose.Schema.Types.ObjectId
     },
-    attachments: [String]
+    attachments: [String],
+    suggestion: String
 })
 
 const Vendor = mongoose.model("Vendor", vendorSchema);

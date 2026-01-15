@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { postRfp, getRfps, patchRfp, postVendor, sendEmails } from "../controllers/rfps.js";
+import { postRfp, getRfps, patchRfp, postVendor } from "../controllers/rfps.js";
 
 const router = Router();
 
@@ -11,7 +11,5 @@ router.get("/", getRfps);
 router.patch("/:id", patchRfp);
 // Add vendor to RFP
 router.post("/:id/vendors", postVendor);
-// Send bulk emails
-router.post("/:id/send-emails", sendEmails);
 
 export default router;
