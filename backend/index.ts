@@ -5,6 +5,7 @@ import { sessionMiddleware } from "./middlewares.js";
 import connectDB from "./db/db.js";
 import sessionRouter from "./routes/session.js";
 import rfpRouter from "./routes/rfps.js";
+import emailRouter from "./routes/email.js";
 dotenv.config();
 
 const app = express();
@@ -16,6 +17,7 @@ app.use(sessionMiddleware);
 
 app.use("/api/session", sessionRouter);
 app.use("/api/rfps", rfpRouter)
+app.use("/api/email", emailRouter)
 
 app.get("/health", (req, res) => {
     res.json({ message: "ok" });

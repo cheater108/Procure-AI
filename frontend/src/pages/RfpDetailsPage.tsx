@@ -30,7 +30,6 @@ import { Textarea } from "@/components/ui/textarea";
 import type { RFP, Vendor} from "@/types/types";
 
 
-
 export default function RfpDetailsPage() {
   const { id } = useParams();
   const [rfp, setRfp] = useState<RFP | null>(null);
@@ -38,7 +37,6 @@ export default function RfpDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAddingVendor, setIsAddingVendor] = useState(false);
   const [newVendor, setNewVendor] = useState({ name: "", email: "", phone: "" });
-  const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
   const [selectedVendorIds, setSelectedVendorIds] = useState<string[]>([]);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [emailBody, setEmailBody] = useState("");
@@ -88,22 +86,14 @@ export default function RfpDetailsPage() {
     }
   };
 
-  const handleSendEmail = (vendorEmail: string) => {
-    setSendingEmailId(vendorEmail);
-    // Simulate email flow
-    setTimeout(() => {
-      setSendingEmailId(null);
-      alert("Email sequence started for " + vendorEmail);
-    }, 1500);
-  };
-
   const handleBulkSendEmails = async () => {
     if (selectedVendorIds.length === 0) return;
     setIsSendingBulk(true);
     try {
-      await api.post(`/rfps/${id}/send-emails`, {
+      await api.post(`/email/send/${id}`, {
         vendorIds: selectedVendorIds,
-        body: emailBody
+        body: emailBody,
+        subject: rfp?.title
       });
       // Refresh vendors to see status change
       const response = await api.get("/rfps");
