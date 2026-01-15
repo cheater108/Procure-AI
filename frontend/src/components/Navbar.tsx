@@ -23,7 +23,7 @@ export function Navbar() {
               to="/chat"
               className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Chat
+              Create RFP
             </Link>
             <Link
               to="/rfps"

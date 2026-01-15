@@ -28,13 +28,15 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/chat">
               <Button size="lg" className="gap-2">
-                Get Started
+                Create RFP
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-            <Button variant="outline" size="lg">
-              Learn More
-            </Button>
+            <Link to="/rfps">
+              <Button variant="outline" size="lg">
+                View Proposals
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
