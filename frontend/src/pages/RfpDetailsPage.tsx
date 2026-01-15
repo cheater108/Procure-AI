@@ -25,6 +25,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChevronLeft, Plus, Mail, Phone, User, Loader2, Send } from "lucide-react";
 import { ProcurementStepper } from "@/components/ProcurementStepper";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import type { RFP, Vendor} from "@/types/types";
 
 
@@ -37,6 +39,10 @@ export default function RfpDetailsPage() {
   const [isAddingVendor, setIsAddingVendor] = useState(false);
   const [newVendor, setNewVendor] = useState({ name: "", email: "", phone: "" });
   const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
+  const [selectedVendorIds, setSelectedVendorIds] = useState<string[]>([]);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [emailBody, setEmailBody] = useState("");
+  const [isSendingBulk, setIsSendingBulk] = useState(false);
 
   useEffect(() => {
     const fetchRfp = async () => {
@@ -47,6 +53,7 @@ export default function RfpDetailsPage() {
         if (found) {
           setRfp(found);
           setVendors(found.vendors);
+          setEmailBody(found.body || "");
         } 
       } catch (error) {
         console.error("Failed to fetch RFP details:", error);
@@ -90,6 +97,47 @@ export default function RfpDetailsPage() {
     }, 1500);
   };
 
+  const handleBulkSendEmails = async () => {
+    if (selectedVendorIds.length === 0) return;
+    setIsSendingBulk(true);
+    try {
+      await api.post(`/rfps/${id}/send-emails`, {
+        vendorIds: selectedVendorIds,
+        body: emailBody
+      });
+      // Refresh vendors to see status change
+      const response = await api.get("/rfps");
+      const found = response.data.rfps.find((item: RFP) => item._id === id);
+      if (found) {
+        setVendors(found.vendors);
+      }
+      setSelectedVendorIds([]);
+      setIsEmailDialogOpen(false);
+      alert("Emails sent successfully to selected vendors!");
+    } catch (error) {
+      console.error("Failed to send bulk emails:", error);
+      alert("Failed to send emails. Please try again.");
+    } finally {
+      setIsSendingBulk(false);
+    }
+  };
+
+  const toggleVendorSelection = (vendorId: string) => {
+    setSelectedVendorIds(prev => 
+      prev.includes(vendorId) 
+        ? prev.filter(id => id !== vendorId)
+        : [...prev, vendorId]
+    );
+  };
+
+  const toggleAllSelection = () => {
+    if (selectedVendorIds.length === vendors.length) {
+      setSelectedVendorIds([]);
+    } else {
+      setSelectedVendorIds(vendors.map(v => v._id));
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
@@ -118,57 +166,98 @@ export default function RfpDetailsPage() {
           <p className="text-muted-foreground">{rfp.description}</p>
         </div>
         
-        <Dialog open={isAddingVendor} onOpenChange={setIsAddingVendor}>
-          <DialogTrigger asChild>
-            <Button className="shrink-0">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Vendor
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Vendor</DialogTitle>
-              <DialogDescription>
-                Enter the details of the vendor you want to include in this RFP.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddVendor} className="space-y-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Vendor Name</Label>
-                <Input 
-                  id="name" 
-                  placeholder="Acme Corp" 
-                  value={newVendor.name}
-                  onChange={(e) => setNewVendor({...newVendor, name: e.target.value})}
-                  required 
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="contact@example.com" 
-                  value={newVendor.email}
-                  onChange={(e) => setNewVendor({...newVendor, email: e.target.value})}
-                  required 
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input 
-                  id="phone" 
-                  placeholder="+1 234 567 890" 
-                  value={newVendor.phone}
-                  onChange={(e) => setNewVendor({...newVendor, phone: e.target.value})}
-                />
+        <div className="flex gap-2">
+          <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="shrink-0" 
+                disabled={selectedVendorIds.length === 0}
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                Send Email ({selectedVendorIds.length})
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Preview & Edit Email</DialogTitle>
+                <DialogDescription>
+                  This email will be sent to {selectedVendorIds.length} selected vendors.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-4 space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="emailSubject">Generated Content</Label>
+                  <Textarea 
+                    id="emailBody" 
+                    className="max-h-[300px]" 
+                    value={emailBody}
+                    onChange={(e) => setEmailBody(e.target.value)}
+                  />
+                </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Add Vendor</Button>
+                <Button variant="outline" onClick={() => setIsEmailDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleBulkSendEmails} disabled={isSendingBulk}>
+                  {isSendingBulk ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                  Send Now
+                </Button>
               </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isAddingVendor} onOpenChange={setIsAddingVendor}>
+            <DialogTrigger asChild>
+              <Button className="shrink-0">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Vendor
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Vendor</DialogTitle>
+                <DialogDescription>
+                  Enter the details of the vendor you want to include in this RFP.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddVendor} className="space-y-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Vendor Name</Label>
+                  <Input 
+                    id="name" 
+                    placeholder="Acme Corp" 
+                    value={newVendor.name}
+                    onChange={(e) => setNewVendor({...newVendor, name: e.target.value})}
+                    required 
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="contact@example.com" 
+                    value={newVendor.email}
+                    onChange={(e) => setNewVendor({...newVendor, email: e.target.value})}
+                    required 
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input 
+                    id="phone" 
+                    placeholder="+1 234 567 890" 
+                    value={newVendor.phone}
+                    onChange={(e) => setNewVendor({...newVendor, phone: e.target.value})}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Add Vendor</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <ProcurementStepper currentStep={2} />
@@ -183,17 +272,30 @@ export default function RfpDetailsPage() {
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow>
+               <TableRow>
+                <TableHead className="w-[50px]">
+                  <Checkbox 
+                    checked={vendors.length > 0 && selectedVendorIds.length === vendors.length}
+                    onChange={toggleAllSelection}
+                  />
+                </TableHead>
                 <TableHead>Vendor</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right">Score</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {vendors.length > 0 ? vendors.map((vendor) => (
-                <TableRow key={vendor.email}>
+               {vendors.length > 0 ? vendors.map((vendor) => (
+                <TableRow key={vendor._id}>
+                  <TableCell className="align-middle">
+                    <Checkbox 
+                      checked={selectedVendorIds.includes(vendor._id)}
+                      onChange={() => toggleVendorSelection(vendor._id)}
+                      disabled={vendor.status === "contacted"}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium align-middle">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
@@ -222,22 +324,9 @@ export default function RfpDetailsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => handleSendEmail(vendor.email)}
-                      disabled={sendingEmailId === vendor.email}
-                      className="text-primary hover:text-primary hover:bg-primary/10"
-                    >
-                      {sendingEmailId === vendor.email ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Send className="mr-2 h-4 w-4" />
-                          Send Email
-                        </>
-                      )}
-                    </Button>
+                    <Badge>
+                      {vendor.status === 'responded' ? vendor.score : 'awaiting response'}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               )) : (
