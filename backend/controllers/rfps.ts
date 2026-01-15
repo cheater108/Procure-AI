@@ -2,6 +2,7 @@ import RFP from "../db/rfp.js";
 import Session from "../db/session.js";
 import Vendor from "../db/vendors.js";
 import { generateRfp } from "../agents/rfpAgent.js";
+import { searchVendors } from "../agents/searchAgent.js";
 import mongoose from "mongoose";
 
 export const postRfp = async (req: any, res: any) => {
@@ -13,7 +14,19 @@ export const postRfp = async (req: any, res: any) => {
         console.log(`[RFP Router] - Generating RFP content for query: ${query}`);
         const generatedContent = await generateRfp(query);
 
-        // 2. Save to DB
+        // 2. Search for Vendors using Search Agent
+        console.log(`[RFP Router] - Searching for vendors for: ${query}`);
+        let foundVendors: any[] = [];
+        try {
+            const searchResult = await searchVendors(query);
+            if (searchResult && searchResult.vendors) {
+                foundVendors = searchResult.vendors;
+            }
+        } catch (searchError) {
+            console.error("[RFP Router] - Vendor search failed:", searchError);
+        }
+
+        // 3. Save RFP to DB
         const rfp = new RFP({
             title: generatedContent.title,
             description: generatedContent.description,
@@ -22,7 +35,25 @@ export const postRfp = async (req: any, res: any) => {
         });
         await rfp.save();
 
-        // 3. Link to Session
+        // 4. Create and Link Vendors
+        if (foundVendors.length > 0) {
+            const vendorDocs = await Promise.all(foundVendors.map(async (v: any) => {
+                const vendor = new Vendor({
+                    name: v.name,
+                    email: v.email,
+                    phone: v.phone,
+                    rfpId: rfp._id,
+                    status: "not_contacted"
+                });
+                return await vendor.save();
+            }));
+            
+            rfp.vendors = vendorDocs.map(v => v._id) as any;
+            await rfp.save();
+            console.log(`[RFP Router] - Added ${vendorDocs.length} vendors to RFP`);
+        }
+
+        // 5. Link to Session
         let session = await Session.findOne({ sessionId });
         if (!session) {
             session = new Session({ sessionId, rfps: [] });

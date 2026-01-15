@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ProcurementStepper } from "@/components/ProcurementStepper";
 import api from "@/api";
@@ -53,9 +53,9 @@ export default function Demo() {
           disabled={isLoading}
           rows={5}
         />
-        <Button type="submit" size="icon" className="w-45" disabled={isLoading}>
+        <Button type="submit" size="icon" className="w-45 self-end" disabled={isLoading}>
           <div className="flex items-center gap-2">
-            <Send className="h-5 w-5" />
+            {isLoading ? <Loader2 className="h-8 w-8 animate-spin text-primary"/> : <Send className="h-5 w-5" />}
             <p>Create Procurement</p>
             <span className="sr-only">Send</span>
           </div>
