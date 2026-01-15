@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { postRfp, getRfps, patchRfp } from "../controllers/rfps.js";
+import { postRfp, getRfps, patchRfp, postVendor } from "../controllers/rfps.js";
 
 const router = Router();
 
@@ -9,5 +9,7 @@ router.post("/", postRfp);
 router.get("/", getRfps);
 // Patch RFP
 router.patch("/:id", patchRfp);
+// Add vendor to RFP
+router.post("/:id/vendors", postVendor);
 
 export default router;

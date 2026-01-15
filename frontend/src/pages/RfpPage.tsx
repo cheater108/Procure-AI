@@ -64,7 +64,7 @@ export default function RfpPage() {
               <Card className="group hover:shadow-md transition-shadow cursor-pointer h-full">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start mb-2">
-                    <Badge variant="outline" className="capitalize">
+                    <Badge variant="default" className="capitalize">
                       {rfp.status}
                     </Badge>
                     <span className="text-xs text-muted-foreground flex items-center gap-1">

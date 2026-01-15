@@ -1,6 +1,8 @@
 import RFP from "../db/rfp.js";
 import Session from "../db/session.js";
+import Vendor from "../db/vendors.js";
 import { generateRfp } from "../agents/rfpAgent.js";
+import mongoose from "mongoose";
 
 export const postRfp = async (req: any, res: any) => {
     try {
@@ -38,7 +40,12 @@ export const postRfp = async (req: any, res: any) => {
 export const getRfps = async (req: any, res: any) => {
     try {
         const sessionId = req.sessionId;
-        const session = await Session.findOne({ sessionId }).populate("rfps");
+        const session = await Session.findOne({ sessionId }).populate({
+            path: "rfps",
+            populate: {
+                path: "vendors"
+            }
+        });
         
         if (!session) {
             return res.json({ rfps: [] });
@@ -69,3 +76,33 @@ export const patchRfp = async (req: any, res: any) => {
     }
 };
 
+export const postVendor = async (req: any, res: any) => {
+    try {
+        const { id } = req.params; 
+        const { name, email, phone } = req.body;
+
+        // 1. Create Vendor
+        const vendor = new Vendor({
+            name,
+            email,
+            phone,
+            status: "not_contacted",
+            rfpId: new mongoose.Types.ObjectId(id),
+        });
+        await vendor.save();
+
+        // 2. Link to RFP
+        const rfp = await RFP.findById(id);
+        if (!rfp) {
+            return res.status(404).json({ error: "RFP not found" });
+        }
+        
+        rfp.vendors.push(vendor._id as any);
+        await rfp.save();
+
+        res.status(201).json(vendor);
+    } catch (error) {
+        console.error("[RFP Router] - Failed to add vendor:", error);
+        res.status(500).json({ error: "Failed to add vendor" });
+    }
+};

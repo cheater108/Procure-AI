@@ -4,21 +4,19 @@ const rfpSchema = new mongoose.Schema({
     title: String,
     description: String,
     body: String,
-    status: String,
+    status: {
+      type: String,
+      default: "new"
+    },
     createdAt: {
         type: Date,
         default: Date.now
     },
-    vendors: [
-        {
-            name: String,
-            email: String,
-            phone: String, 
-            status: String,
-            response: String,
-            score: Number,
-        }
-    ]
+    vendors: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "Vendor",
+        default: []
+    }
 })
 
 const RFP = mongoose.model("RFP", rfpSchema);

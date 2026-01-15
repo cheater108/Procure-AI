@@ -64,23 +64,14 @@ export default function RfpDetailsPage() {
     if (!rfp) return;
 
     try {
-      const vendor: Vendor = {
+      const response = await api.post(`/rfps/${id}/vendors`, {
         name: newVendor.name,
         email: newVendor.email,
         phone: newVendor.phone,
-        status: "not_contacted",
-      };
-
-      const originalVendors = rfp.vendors || [];
-      const updatedVendors = [...originalVendors, vendor];
-
-      const response = await api.patch(`/rfps/${id}`, {
-        vendors: updatedVendors
       });
 
       if (response.data) {
-        setRfp(response.data);
-        setVendors(response.data.vendors);
+        setVendors([...vendors, response.data]);
         setNewVendor({ name: "", email: "", phone: "" });
         setIsAddingVendor(false);
       }
