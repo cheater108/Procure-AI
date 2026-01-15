@@ -101,6 +101,12 @@ export default function RfpDetailsPage() {
     }
   };
 
+  const isEmailValid = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const isVendorFormValid = newVendor.name.trim() !== "" && isEmailValid(newVendor.email);
+
   const handleBulkSendEmails = async () => {
     if (selectedVendorIds.length === 0) return;
     setIsSendingBulk(true);
@@ -264,7 +270,7 @@ export default function RfpDetailsPage() {
                   />
                 </div>
                 <DialogFooter>
-                  <Button type="submit">Add Vendor</Button>
+                  <Button type="submit" disabled={!isVendorFormValid}>Add Vendor</Button>
                 </DialogFooter>
               </form>
             </DialogContent>

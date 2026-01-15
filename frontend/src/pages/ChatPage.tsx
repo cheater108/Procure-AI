@@ -53,7 +53,12 @@ export default function Demo() {
           disabled={isLoading}
           rows={5}
         />
-        <Button type="submit" size="icon" className="w-45 self-end" disabled={isLoading}>
+        <Button 
+          type="submit" 
+          size="icon" 
+          className="w-45 self-end" 
+          disabled={isLoading || !query.trim()}
+        >
           <div className="flex items-center gap-2">
             {isLoading ? <Loader2 className="h-8 w-8 animate-spin text-primary"/> : <Send className="h-5 w-5" />}
             <p>Create Procurement</p>
