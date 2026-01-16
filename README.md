@@ -1,5 +1,5 @@
 
-# Finance ai assistant
+# Procure ai assistant
 Procure AI - An AI assisted procurement tool which helps in creating Request for Proposals (RFPs), send emails and rank proposals.
 
 
