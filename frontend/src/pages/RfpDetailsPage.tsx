@@ -35,6 +35,12 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import type { RFP, Vendor} from "@/types/types";
 
 
@@ -186,18 +192,24 @@ export default function RfpDetailsPage() {
         </div>
         
         <div className="flex gap-2">
-          <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="shrink-0" 
-                disabled={selectedVendorIds.length === 0}
-              >
-                <Mail className="mr-2 h-4 w-4" />
-                Send Email ({selectedVendorIds.length})
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+          <TooltipProvider>
+            <Tooltip>
+              <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
+                <TooltipTrigger asChild>
+                  <div className="inline-block">
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="shrink-0" 
+                        disabled={selectedVendorIds.length === 0}
+                      >
+                        <Mail className="mr-2 h-4 w-4" />
+                        Send Email ({selectedVendorIds.length})
+                      </Button>
+                    </DialogTrigger>
+                  </div>
+                </TooltipTrigger>
+                <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Preview & Edit Email</DialogTitle>
                 <DialogDescription>
@@ -224,6 +236,13 @@ export default function RfpDetailsPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          {selectedVendorIds.length === 0 && (
+            <TooltipContent>
+              <p>Select vendors to send an email</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
 
           <Dialog open={isAddingVendor} onOpenChange={setIsAddingVendor}>
             <DialogTrigger asChild>
