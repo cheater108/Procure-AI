@@ -6,6 +6,7 @@ import RfpPage from "@/pages/RfpPage";
 import RfpDetailsPage from "@/pages/RfpDetailsPage";
 import { useEffect } from "react";
 import api from "./api";
+import { Toaster } from "sonner";
 
 function App() {
   useEffect(() => {
@@ -15,14 +16,17 @@ function App() {
     initiateSession()
   }, []);
   return (
-    <Routes>
-      <Route path="/" element={<AppLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="chat" element={<ChatPage />} />
-        <Route path="rfps" element={<RfpPage />} />
-        <Route path="rfps/:id" element={<RfpDetailsPage />} />
-      </Route>
-    </Routes>
+    <>
+      <Toaster position="top-right" richColors />
+      <Routes>
+        <Route path="/" element={<AppLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="chat" element={<ChatPage />} />
+          <Route path="rfps" element={<RfpPage />} />
+          <Route path="rfps/:id" element={<RfpDetailsPage />} />
+        </Route>
+      </Routes>
+    </>
   );
 }
 

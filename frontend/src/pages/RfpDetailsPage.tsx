@@ -34,6 +34,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { toast } from "sonner";
 import type { RFP, Vendor} from "@/types/types";
 
 
@@ -93,10 +94,11 @@ export default function RfpDetailsPage() {
         setVendors([...vendors, response.data]);
         setNewVendor({ name: "", email: "", phone: "" });
         setIsAddingVendor(false);
+        toast.success(`Vendor ${response.data.name} added successfully`);
       }
     } catch (error) {
       console.error("Failed to add vendor:", error);
-      alert("Failed to add vendor. Please try again.");
+      toast.error("Failed to add vendor. Please try again.");
     }
   };
 
@@ -123,10 +125,10 @@ export default function RfpDetailsPage() {
       }
       setSelectedVendorIds([]);
       setIsEmailDialogOpen(false);
-      alert("Emails sent successfully to selected vendors!");
+      toast.success("Emails sent successfully to selected vendors!");
     } catch (error) {
       console.error("Failed to send bulk emails:", error);
-      alert("Failed to send emails. Please try again.");
+      toast.error("Failed to send emails. Please try again.");
     } finally {
       setIsSendingBulk(false);
     }
